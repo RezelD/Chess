@@ -1,7 +1,6 @@
 #pragma once
-#include "Board.h"
 
-enum PieceType {
+enum PieceType : char {
 
 	pawn = 'P',
 	rook = 'R',

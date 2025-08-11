@@ -118,3 +118,88 @@ void Board::printChessBoard() {
 	cout << " +----+----+----+----+----+----+----+----+" << endl;
 	cout << "    a    b    c    d    e    f    g    h  " << endl;
 }
+
+bool Board::isOccupied(Square square) {
+
+	uint64_t mask = Board::mask(square);
+
+	uint64_t pieces = whitePawns | whiteRooks | whiteKnights | whiteBishops | whiteQueen | whiteKing |
+		blackPawns | blackRooks | blackKnights | blackBishops | blackQueen | blackKing;
+
+
+	return (pieces & mask) != 0;
+}
+
+Square Board::changeRow(Square square, int delta) {
+
+	Square changedSquare = static_cast<Square>(square + delta * 8);
+
+	if (changedSquare < Square::A1 || changedSquare > Square::H8) {
+		return Square::OOB;
+	}
+	else {
+		return changedSquare;
+	}
+}
+
+Square Board::changeCol(Square square, int delta) {
+
+	uint64_t beforeRow = getRow(square);
+
+	Square changedSquare = static_cast<Square>(square + delta);
+
+	uint64_t afterRow = getRow(changedSquare);
+
+	if (beforeRow != afterRow) {
+		return Square::OOB;
+	}
+	else {
+		return changedSquare;
+	}
+}
+
+PieceType Board::getPieceAtSquare(Square square) {
+
+	uint64_t mask = Board::mask(square);
+
+	if ((whitePawns & mask) != 0) {
+		return PieceType::whitePawn;
+	}
+	else if ((whiteRooks & mask) != 0) {
+		return PieceType::whiteRook;
+	}
+	else if ((whiteKnights & mask) != 0) {
+		return PieceType::whiteKnight;
+	}
+	else if ((whiteBishops & mask) != 0) {
+		return PieceType::whiteBishop;
+	}
+	else if ((whiteQueen & mask) != 0) {
+		return PieceType::whiteQueen;
+	}
+	else if ((whiteKing & mask) != 0) {
+		return PieceType::whiteKing;
+	}
+	else if ((blackPawns & mask) != 0) {
+		return PieceType::blackPawn;
+	}
+	else if ((blackRooks & mask) != 0) {
+		return PieceType::blackRook;
+	}
+	else if ((blackKnights & mask) != 0) {
+		return PieceType::blackKnight;
+	}
+	else if ((blackBishops & mask) != 0) {
+		return PieceType::blackBishop;
+	}
+	else if ((blackQueen & mask) != 0) {
+		return PieceType::blackQueen;
+	}
+	else if ((blackKing & mask) != 0) {
+		return PieceType::blackKing;
+	}
+	else {
+		return PieceType::empty;
+	}
+
+}

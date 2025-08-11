@@ -6,6 +6,7 @@
 #include<vector>
 #include "Board.h"
 #include "InputHandler.h"
+
 using namespace std;
 
 Board board;
@@ -13,8 +14,6 @@ Board board;
 
 int main() {
 	
-    
-
     board.printChessBoard();
     
     for (int i = 0; i < 999999; i++) {

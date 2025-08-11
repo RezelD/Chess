@@ -1,5 +1,6 @@
 #pragma once
 #include "Pieces.h"
+#include "Board.h"
 
 
 namespace Move {
@@ -14,14 +15,8 @@ namespace Move {
 
 	};
 
-	struct LastMoveInfo {
-
-		PieceType piece;
-		Square origin;
-		Square destination;
-		uint8_t exceptions;
-		PieceType promotion;
-	};
+	extern MoveInfo moveInfo;
+	extern MoveInfo lastMoveInfo;
 
 	enum class Exceptions {
 
@@ -32,12 +27,4 @@ namespace Move {
 		CASTLE = 1 << 3
 
 	};
-
-
-
-	void makeMove(const MoveInfo& move) {
-
-
-	}
-
 }
