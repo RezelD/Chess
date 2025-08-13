@@ -25,3 +25,8 @@ enum PieceType : char {
 
 	empty = ' '
 };
+
+enum Color {
+	white,
+	black
+};

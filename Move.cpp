@@ -6,4 +6,6 @@ namespace Move {
 	MoveInfo moveInfo{};
 	MoveInfo lastMoveInfo{};
 
+
+
 }

@@ -1,12 +1,14 @@
 #pragma once
 #include <array>
+#include <cstdint>
 #include <iostream>
-#include <iomanip>
+#include <string>
+
 #include "Pieces.h"
 
 using namespace std;
 
-enum Square {
+enum Square : int {
 
     A1, B1, C1, D1, E1, F1, G1, H1,
     A2, B2, C2, D2, E2, F2, G2, H2,
@@ -19,7 +21,7 @@ enum Square {
     OOB = -1
 };
 
-inline Square makeSquare(int row, int col) {
+inline Square makeSquare(const int row, const int col) {
 	return static_cast<Square>(row << 3 | col);
 }
 
@@ -31,15 +33,15 @@ class Board {
     uint64_t whiteRooks;
     uint64_t whiteKnights;
     uint64_t whiteBishops;
-    uint64_t whiteQueen;
-    uint64_t whiteKing;
+    uint64_t whiteQueens;
+    uint64_t whiteKings;
 
     uint64_t blackPawns;
     uint64_t blackRooks;
     uint64_t blackKnights;
     uint64_t blackBishops;
-    uint64_t blackQueen;
-    uint64_t blackKing;
+    uint64_t blackQueens;
+    uint64_t blackKings;
 
     public:
 
@@ -49,48 +51,90 @@ class Board {
         whiteRooks = 0x0000000000000081ULL;
         whiteKnights = 0x0000000000000042ULL;
         whiteBishops = 0x0000000000000024ULL;
-        whiteQueen = 0x0000000000000008ULL;
-        whiteKing = 0x0000000000000010ULL;
+        whiteQueens = 0x0000000000000008ULL;
+        whiteKings = 0x0000000000000010ULL;
 
         blackPawns = 0x00FF000000000000ULL;
         blackRooks = 0x8100000000000000ULL;
         blackKnights = 0x4200000000000000ULL;
         blackBishops = 0x2400000000000000ULL;
-        blackQueen = 0x0800000000000000ULL;
-        blackKing = 0x1000000000000000ULL;
+        blackQueens = 0x0800000000000000ULL;
+        blackKings = 0x1000000000000000ULL;
     }
 
-    Board(const array<array<char, 8>, 8>& board);
+    explicit Board(const array<array<char, 8>, 8>& board);
 
-    bool isOccupied(Square square);
+	[[nodiscard]] bool isOccupied(Square square) const;
 
-    uint64_t mask(Square square) {
+    static uint64_t mask(const Square square) {
         return 1ULL << square;
     }
 
-    uint64_t getCol(Square square) {
+    static uint64_t getCol(const Square square) {
         return 0x0101010101010101ULL << (square & 7);
     }
 
-    uint64_t getRow(Square square) {
+    static uint64_t getRow(const Square square) {
         return 0x00000000000000FFULL << ((square >> 3) * 8);
     }
 
-    Square changeRow(Square square, int delta);
+    static Square changeRow(Square square, int delta);
 
-    Square changeCol(Square square, int delta);
+    static Square changeCol(Square square, int delta);
 
-    int getRowNum(Square square) {
+    static Square changeSquare(Square square, int deltaRow, int deltaCol);
+
+    static int getRowNum(const Square square) {
         return square / 8;
     }
 
-    int getColNum(Square square) {
+    static int getColNum(const Square square) {
         return square % 8;
     }
 
-    PieceType getPieceAtSquare(Square square);
+	[[nodiscard]] PieceType getPieceAtSquare(Square square) const;
 
-    void printChessBoard();
+	void printChessBoard() const;
+
+    void makeMove();
+
+	[[nodiscard]] bool friendlyFire(Square toSquare, Color color) const;
+
+    static string squareToString(Square square) {
+
+        const int row = getRowNum(square);
+        const int col = getColNum(square);
+
+        const char rowChar = '1' + row;
+        const char colChar = 'a' + col;
+
+        return  string() + colChar + rowChar;
+    }
+
+    static Square readSquare() {
+
+
+
+        string squareString;
+        cin >> squareString;
+
+        while (squareString.size() != 2) {
+            cout << "Invalid format, please try again";
+            cin >> squareString;
+        }
+
+        int file = squareString[0] - 'a';
+        int rank = squareString[1] - '1';
+
+        while (file < 0 || file > 7 || rank < 0 || rank > 7) {
+            cout << "Invalid format.";
+            cin >> squareString;
+            file = squareString[0] - 'a';
+            rank = squareString[1] - '1';
+        }
+
+        return makeSquare(file, rank);
+    }
 };
 
 extern Board board;

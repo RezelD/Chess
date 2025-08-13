@@ -1,61 +1,67 @@
 #include "Board.h"
 
-Board::Board(const array<array<char, 8>, 8>& board) {
-	
+#include <cstdint>
+#include <iomanip>
+#include <iostream>
+
+#include "Move.h"
+
+Board::Board(const array<array<char, 8>, 8>& board) : whitePawns(0), whiteRooks(0), whiteKnights(0),
+                                                      whiteBishops(0), whiteQueens(0), whiteKings(0), blackPawns(0), blackRooks(0), blackKnights(0),
+                                                      blackBishops(0), blackQueens(0), blackKings(0){
+
 	for (int row = 7; row >= 0; row--) {
 
 		for (int col = 0; col < 8; col++) {
 
-			Square square = makeSquare(row, col);
-			uint64_t mask = Board::mask(square);
-			char piece = board[row][col];
+			const uint64_t mask = Board::mask(makeSquare(row,col));
 
-			switch (piece) {
+			switch (board[row][col]) {
 
-				case PieceType::whitePawn:
+				case whitePawn:
 					whitePawns |= mask;
 					break;
-				case PieceType::whiteRook:
+				case whiteRook:
 					whiteRooks |= mask;
 					break;
-				case PieceType::whiteKnight:
+				case whiteKnight:
 					whiteKnights |= mask;
 					break;
-				case PieceType::whiteBishop:
+				case whiteBishop:
 					whiteBishops |= mask;
 					break;
-				case PieceType::whiteQueen:
-					whiteQueen |= mask;
+				case whiteQueen:
+					whiteQueens |= mask;
 					break;
-				case PieceType::whiteKing:
-					whiteKing |= mask;
+				case whiteKing:
+					whiteKings |= mask;
 					break;
-				case PieceType::blackPawn:
+				case blackPawn:
 					blackPawns |= mask;
 					break;
-				case PieceType::blackRook:
+				case blackRook:
 					blackRooks |= mask;
 					break;
-				case PieceType::blackKnight:
+				case blackKnight:
 					blackKnights |= mask;
 					break;
-				case PieceType::blackBishop:
+				case blackBishop:
 					blackBishops |= mask;
 					break;
-				case PieceType::blackQueen:
-					blackQueen |= mask;
+				case blackQueen:
+					blackQueens |= mask;
 					break;
-				case PieceType::blackKing:
-					blackKing |= mask;
+				case blackKing:
+					blackKings |= mask;
 					break;
 				default:
 					break;
 			}
 		}
 	}
-	
+
 }
-void Board::printChessBoard() {
+void Board::printChessBoard() const {
 
 	for (int row = 7; row >= 0; row--) {
 
@@ -63,143 +69,263 @@ void Board::printChessBoard() {
 
 		for (int col = 0; col < 8; col++) {
 
-			Square square = makeSquare(row, col);
+			const Square square = makeSquare(row, col);
 
-			uint64_t mask = Board::mask(square);
+			const uint64_t mask = Board::mask(square);
 
 			char piece;
 
 			if (whitePawns & mask) {
-				piece = static_cast<char>(PieceType::whitePawn);
+				piece = whitePawn;
 			}
 			else if (whiteRooks & mask) {
-				piece = static_cast<char>(PieceType::whiteRook);
+				piece = whiteRook;
 			}
 			else if (whiteKnights & mask) {
-				piece = static_cast<char>(PieceType::whiteKnight);
+				piece = whiteKnight;
 			}
 			else if (whiteBishops & mask) {
-				piece = static_cast<char>(PieceType::whiteBishop);
+				piece = whiteBishop;
 			}
-			else if (whiteQueen & mask) {
-				piece = static_cast<char>(PieceType::whiteQueen);
+			else if (whiteQueens & mask) {
+				piece = whiteQueen;
 			}
-			else if (whiteKing & mask) {
-				piece = static_cast<char>(PieceType::whiteKing);
+			else if (whiteKings & mask) {
+				piece = whiteKing;
 			}
 			else if (blackPawns & mask) {
-				piece = static_cast<char>(PieceType::blackPawn);
+				piece = blackPawn;
 			}
 			else if (blackRooks & mask) {
-				piece = static_cast<char>(PieceType::blackRook);
+				piece = blackRook;
 			}
 			else if (blackKnights & mask) {
-				piece = static_cast<char>(PieceType::blackKnight);
+				piece = blackKnight;
 			}
 			else if (blackBishops & mask) {
-				piece = static_cast<char>(PieceType::blackBishop);
+				piece = blackBishop;
 			}
-			else if (blackQueen & mask) {
-				piece = static_cast<char>(PieceType::blackQueen);
+			else if (blackQueens & mask) {
+				piece = blackQueen;
 			}
-			else if (blackKing & mask) {
-				piece = static_cast<char>(PieceType::blackKing);
+			else if (blackKings & mask) {
+				piece = blackKing;
 			}
 			else {
-				piece = ' ';
+				piece = PieceType::empty;
 			}
 
 			cout << " | " << setw(2) << piece;
 		}
 
-		cout << " |" << (8 - row) << endl;
+		cout << " |" << (row + 1) << endl;
 	}
 
 	cout << " +----+----+----+----+----+----+----+----+" << endl;
 	cout << "    a    b    c    d    e    f    g    h  " << endl;
 }
 
-bool Board::isOccupied(Square square) {
+bool Board::isOccupied(const Square square) const {
 
-	uint64_t mask = Board::mask(square);
+	const uint64_t mask = Board::mask(square);
 
-	uint64_t pieces = whitePawns | whiteRooks | whiteKnights | whiteBishops | whiteQueen | whiteKing |
-		blackPawns | blackRooks | blackKnights | blackBishops | blackQueen | blackKing;
+	const uint64_t pieces = whitePawns | whiteRooks | whiteKnights | whiteBishops | whiteQueens | whiteKings |
+		blackPawns | blackRooks | blackKnights | blackBishops | blackQueens | blackKings;
 
 
 	return (pieces & mask) != 0;
 }
 
-Square Board::changeRow(Square square, int delta) {
+Square Board::changeRow(const Square square, const int delta) {
 
-	Square changedSquare = static_cast<Square>(square + delta * 8);
-
-	if (changedSquare < Square::A1 || changedSquare > Square::H8) {
-		return Square::OOB;
+	if (const auto changedSquare = static_cast<Square>(square + delta * 8);
+		changedSquare < A1 || changedSquare > H8) {
+		return OOB;
 	}
 	else {
 		return changedSquare;
 	}
 }
 
-Square Board::changeCol(Square square, int delta) {
+Square Board::changeCol(const Square square, const int delta) {
 
-	uint64_t beforeRow = getRow(square);
+	const uint64_t beforeRow = getRow(square);
 
-	Square changedSquare = static_cast<Square>(square + delta);
+	const auto changedSquare = static_cast<Square>(square + delta);
 
-	uint64_t afterRow = getRow(changedSquare);
-
-	if (beforeRow != afterRow) {
-		return Square::OOB;
+	if (const uint64_t afterRow = getRow(changedSquare); beforeRow != afterRow) {
+		return OOB;
 	}
-	else {
-		return changedSquare;
-	}
+
+	return changedSquare;
 }
 
-PieceType Board::getPieceAtSquare(Square square) {
+Square Board::changeSquare(const Square square, const int deltaRow, const int deltaCol) {
 
-	uint64_t mask = Board::mask(square);
+	Square changedSquare = square;
+
+	changedSquare = changeRow(changedSquare, deltaRow);
+	changedSquare = changeCol(changedSquare, deltaCol);
+	return changedSquare;
+}
+
+PieceType Board::getPieceAtSquare(const Square square) const {
+
+	const uint64_t mask = Board::mask(square);
 
 	if ((whitePawns & mask) != 0) {
-		return PieceType::whitePawn;
+		return whitePawn;
 	}
-	else if ((whiteRooks & mask) != 0) {
-		return PieceType::whiteRook;
+	if ((whiteRooks & mask) != 0) {
+		return whiteRook;
 	}
-	else if ((whiteKnights & mask) != 0) {
-		return PieceType::whiteKnight;
+	if ((whiteKnights & mask) != 0) {
+		return whiteKnight;
 	}
-	else if ((whiteBishops & mask) != 0) {
-		return PieceType::whiteBishop;
+	if ((whiteBishops & mask) != 0) {
+		return whiteBishop;
 	}
-	else if ((whiteQueen & mask) != 0) {
-		return PieceType::whiteQueen;
+	if ((whiteQueens & mask) != 0) {
+		return whiteQueen;
 	}
-	else if ((whiteKing & mask) != 0) {
-		return PieceType::whiteKing;
+	if ((whiteKings & mask) != 0) {
+		return whiteKing;
 	}
-	else if ((blackPawns & mask) != 0) {
-		return PieceType::blackPawn;
+	if ((blackPawns & mask) != 0) {
+		return blackPawn;
 	}
-	else if ((blackRooks & mask) != 0) {
-		return PieceType::blackRook;
+	if ((blackRooks & mask) != 0) {
+		return blackRook;
 	}
-	else if ((blackKnights & mask) != 0) {
-		return PieceType::blackKnight;
+	if ((blackKnights & mask) != 0) {
+		return blackKnight;
 	}
-	else if ((blackBishops & mask) != 0) {
-		return PieceType::blackBishop;
+	if ((blackBishops & mask) != 0) {
+		return blackBishop;
 	}
-	else if ((blackQueen & mask) != 0) {
-		return PieceType::blackQueen;
+	if ((blackQueens & mask) != 0) {
+		return blackQueen;
 	}
-	else if ((blackKing & mask) != 0) {
-		return PieceType::blackKing;
+	if ((blackKings & mask) != 0) {
+		return blackKing;
 	}
-	else {
-		return PieceType::empty;
+
+	return PieceType::empty;
+
+}
+
+void Board::makeMove() {
+
+	const uint64_t fromMask = mask(Move::moveInfo.origin);
+	const uint64_t toMask = mask(Move::moveInfo.destination);
+
+	const uint64_t notFromMask = ~fromMask;
+	const uint64_t notToMask = ~toMask;
+
+	cout << Move::moveInfo.origin << " -> " << Move::moveInfo.destination << endl;
+
+
+	switch (getPieceAtSquare(Move::moveInfo.origin)) {
+		case whitePawn:
+
+			if (Move::checkException(Move::lastMoveInfo, Move::Exceptions::EN_PASSANT)) {
+				if (Move::moveInfo.destination == Move::lastMoveInfo.enPassantSquare) {
+					const uint64_t passantMask = mask(changeRow(Move::lastMoveInfo.enPassantSquare, -1));
+					const uint64_t notPassantMask = ~passantMask;
+					blackPawns &= notPassantMask;
+				}
+			}
+			whitePawns &= notFromMask;
+			whitePawns &= notToMask;
+			whitePawns |= toMask;
+			break;
+		case whiteRook:
+			whiteRooks &= notFromMask;
+			whiteRooks &= notToMask;
+			whiteRooks |= toMask;
+			break;
+		case whiteKnight:
+			whiteKnights &= notFromMask;
+			whiteKnights &= notToMask;
+			whiteKnights |= toMask;
+			break;
+		case whiteBishop:
+			whiteBishops &= notFromMask;
+			whiteBishops &= notToMask;
+			whiteBishops |= toMask;
+			break;
+		case whiteQueen:
+			whiteQueens &= notFromMask;
+			whiteQueens &= notToMask;
+			whiteQueens |= toMask;
+			break;
+		case whiteKing:
+			whiteKings &= notFromMask;
+			whiteKings &= notToMask;
+			whiteKings |= toMask;
+			break;
+		case blackPawn:
+
+			if (Move::checkException(Move::lastMoveInfo, Move::Exceptions::EN_PASSANT)) {
+
+				if (Move::moveInfo.destination == Move::lastMoveInfo.enPassantSquare) {
+					const uint64_t passantMask = mask(changeRow(Move::lastMoveInfo.enPassantSquare, 1));
+					const uint64_t notPassantMask = ~passantMask;
+					whitePawns &= notPassantMask;
+				}
+
+			}
+
+			blackPawns &= notFromMask;
+			blackPawns &= notToMask;
+			blackPawns |= toMask;
+			break;
+		case blackRook:
+			blackRooks &= notFromMask;
+			blackRooks &= notToMask;
+			blackRooks |= toMask;
+			break;
+		case blackKnight:
+			blackKnights &= notFromMask;
+			blackKnights &= notToMask;
+			blackKnights |= toMask;
+			break;
+		case blackBishop:
+			blackBishops &= notFromMask;
+			blackBishops &= notToMask;
+			blackBishops |= toMask;
+			break;
+		case blackQueen:
+			blackQueens &= notFromMask;
+			blackQueens &= notToMask;
+			blackQueens |= toMask;
+			break;
+		case blackKing:
+			blackKings &= notFromMask;
+			blackKings &= notToMask;
+			blackKings |= toMask;
+			break;
+		default:
+			cout << "Invalid piece type!";
 	}
+
+	Move::lastMoveInfo = Move::moveInfo;
+
+	Move::moveInfo = {};
+
+
+}
+
+bool Board::friendlyFire(const Square toSquare, const Color color) const  {
+
+	uint64_t teamPieces;
+
+	if (color == white) {
+		teamPieces = whitePawns | whiteRooks | whiteKnights | whiteBishops | whiteQueens | whiteKings;
+	} else {
+		teamPieces = blackPawns | blackRooks | blackKnights | blackBishops | blackQueens | blackKings;
+	}
+
+	return (teamPieces & mask(toSquare)) != 0;
 
 }

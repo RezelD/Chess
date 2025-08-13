@@ -1,9 +1,4 @@
 #include<iostream>
-#include<string>
-#include<iomanip>
-#include<cctype>
-#include<array>
-#include<vector>
 #include "Board.h"
 #include "InputHandler.h"
 

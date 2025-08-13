@@ -10,6 +10,7 @@ namespace Move {
 		PieceType piece;
 		Square origin;
 		Square destination;
+		Square enPassantSquare;
 		uint8_t exceptions;
 		PieceType promotion;
 
@@ -18,7 +19,7 @@ namespace Move {
 	extern MoveInfo moveInfo;
 	extern MoveInfo lastMoveInfo;
 
-	enum class Exceptions {
+	enum Exceptions {
 
 		NONE = 0,
 		CAPTURE = 1 << 0,
@@ -27,4 +28,9 @@ namespace Move {
 		CASTLE = 1 << 3
 
 	};
+
+	inline bool checkException(const MoveInfo& moveInfo, const Exceptions exception) {
+		return (moveInfo.exceptions & exception) != 0;
+	}
+
 }

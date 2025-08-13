@@ -1,5 +1,7 @@
 #include "InputHandler.h"
 
+#include "Move.h"
+
 namespace InputHandler {
 
     int movesMade = 0;
@@ -28,6 +30,7 @@ namespace InputHandler {
 
                 if (move.length() < 3) {
                     cout << "\nInvalid Move!\n";
+                    movesMade--;
                 }
                 else {
                     isValid = true;
@@ -36,6 +39,7 @@ namespace InputHandler {
             else {
                 if (move.size() < 2) {
                     cout << "\nInvalid Move!\n";
+                    movesMade--;
                 }
                 else {
                     isValid = true;
@@ -48,7 +52,7 @@ namespace InputHandler {
         movesMade++;
     }
 
-    void convertNotation(string move) {
+    void convertNotation(const string &move) {
 
         char toFile;
         char toRank;
@@ -65,8 +69,8 @@ namespace InputHandler {
                 return;
             }
 
-            piece = (movesMade % 2 == 0) ? toupper(move[0]) : tolower(move[0]);
-            toFile = tolower(move[1]);
+            piece = (movesMade % 2 == 0) ?  static_cast<char>(toupper(move[0])) : static_cast<char>(tolower(move[0]));
+            toFile = static_cast<char>(tolower(move[1]));
             toRank = move[2];
 
             if (toFile < 'a' || toFile > 'h' || toRank < '1' || toRank > '8') {
@@ -78,7 +82,7 @@ namespace InputHandler {
             toRow = toRank - '1';
             toCol = toFile - 'a';
 
-            Square toSquare = makeSquare(toRow, toCol);
+            const Square toSquare = makeSquare(toRow, toCol);
 
 
 
@@ -92,7 +96,7 @@ namespace InputHandler {
                 return;
             }
 
-            toFile = tolower(move[0]);
+            toFile = static_cast<char>(tolower(move[0]));
             toRank = move[1];
 
             if (toFile < 'a' || toFile > 'h' || toRank < '1' || toRank > '8') {
@@ -106,7 +110,7 @@ namespace InputHandler {
 
 
 
-            Square toSquare = makeSquare(toRow, toCol);
+            const Square toSquare = makeSquare(toRow, toCol);
 
             findPiece(piece, toSquare);
         }
@@ -114,95 +118,146 @@ namespace InputHandler {
 
     }
 
-    void findPiece(char piece, Square toSquare) {
-
-        Square origin;
+    void findPiece(const char piece, const Square toSquare) {
 
         Move::moveInfo.destination = toSquare;
 
 
-
         switch (piece) {
 
-            case PieceType::whitePawn:
-            case PieceType::blackPawn:
+            case whitePawn:
+            case blackPawn:
 
-                int doubleStepDest;
+                int doubleStepRow;
+                int promotionRow;
                 int direction;
+                Color color;
 
-                if (piece == PieceType::whitePawn) {
-                    Move::moveInfo.piece = PieceType::whitePawn;
-                    doubleStepDest = 3;
+                if (piece == whitePawn) {
+                    Move::moveInfo.piece = whitePawn;
+                    doubleStepRow = 3;
+                    promotionRow = 7;
                     direction = -1;
+                    color = white;
                 }
                 else {
-                    Move::moveInfo.piece = PieceType::blackPawn;
-                    doubleStepDest = 4;
+                    Move::moveInfo.piece = blackPawn;
+                    doubleStepRow = 4;
+                    promotionRow = 0;
                     direction = 1;
+                    color = black;
                 }
 
                 if (board.isOccupied(toSquare)) {
-
+                    cout << "Capturing not implemented!";
+                    movesMade--;
                 }
                 else {
-                    int rowNum = board.getRowNum(toSquare);
 
-                    origin = board.changeRow(toSquare, 1 * direction);
-                    if (origin == Square::OOB) {
+                    const int destinationRow = Board::getRowNum(toSquare);
+
+                    Square origin = Board::changeRow(toSquare, 1 * direction);
+                    if (origin == OOB) {
                         cout << "Invalid move!";
                         movesMade--;
                         return;
                     }
 
-                    PieceType pathSquare = board.getPieceAtSquare(origin);
-
-                    if (pathSquare == piece) {
+                    if (PieceType pathSquare = board.getPieceAtSquare(origin); pathSquare == piece) {
                         Move::moveInfo.origin = origin;
 
-                        //make move
-                        return;
+                        if (destinationRow == promotionRow) {
+                            Move::moveInfo.exceptions |= Move::Exceptions::PROMOTION;
+                        }
+
+                        board.makeMove();
+                        board.printChessBoard();
                     }
                     else if (pathSquare == PieceType::empty) {
 
-                        if (rowNum == doubleStepDest) {
+                        if (destinationRow == doubleStepRow) {
 
-                            origin = board.changeRow(toSquare, 2 * direction);
-                            if (origin == Square::OOB) {
+                            origin = Board::changeRow(toSquare, 2 * direction);
+                            if (origin == OOB) {
                                 cout << "Invalid move!";
                                 movesMade--;
                                 return;
                             }
                             pathSquare = board.getPieceAtSquare(origin);
                             if (pathSquare == piece) {
-                                //make double step move
+                                Move::moveInfo.exceptions |= Move::Exceptions::EN_PASSANT;
+                                Move::moveInfo.enPassantSquare = Board::changeRow(toSquare, 1 * direction);
+                                Move::moveInfo.origin = origin;
 
-                                return;
+                                board.makeMove();
+                                board.printChessBoard();
+
                             }
                             else {
                                 cout << "Not your piece / No pawn to move!";
                                 movesMade--;
+                            }
+                        } else {
+                            cout << "Can only move 2 steps on first move!";
+                            movesMade--;
+                        }
+                    }
+                    else if (pathSquare == whitePawn || pathSquare == blackPawn) {
+
+
+
+                        if (Move::checkException(Move::lastMoveInfo, Move::Exceptions::EN_PASSANT)) {
+
+                            Square leftOrigin = Board::changeSquare(toSquare, 1 * direction, 1 * direction);
+                            Square rightOrigin = Board::changeSquare(toSquare, 1 * direction, -1 * direction);
+
+                            if (board.getPieceAtSquare(leftOrigin) == piece && board.getPieceAtSquare(rightOrigin) == piece) {
+                                cout << "Two pawns can make en passant! Pick the column of the pawn you want to make the capture. ( "
+                                << Board::squareToString(leftOrigin) << ", " << Board::squareToString(rightOrigin) << " ): ";
+
+                                origin = Board::readSquare();
+
+                            }else if (board.getPieceAtSquare(leftOrigin) == piece) {
+                                origin = leftOrigin;
+                            } else if (board.getPieceAtSquare(rightOrigin) == piece) {
+                                origin = rightOrigin;
+                            } else {
+                                cout << "No valid pawn to do en passant";
+                                movesMade--;
                                 return;
                             }
-                        }
+
+                            if (toSquare != Move::lastMoveInfo.enPassantSquare) {
+                                cout << "Invalid move!";
+                                movesMade--;
+                                return;
+                            }
+
+                            if (board.friendlyFire(Board::changeRow(Move::lastMoveInfo.enPassantSquare, direction), color)) {
+                                cout << "Can't capture your own piece!";
+                                movesMade--;
+                                return;
+                            }
+
+                            Move::moveInfo.origin = origin;
 
 
+                            board.makeMove();
+                            board.printChessBoard();
 
-
-                    }
-                    else if (pathSquare == PieceType::whitePawn || pathSquare == PieceType::blackPawn) {
-
-                        if (Move::lastMoveInfo.exceptions & static_cast<uint8_t>(Move::Exceptions::EN_PASSANT)) {
-                            // en passant move
+                        } else {
+                            cout << "Can only en passant right after a two step move!";
+                            movesMade--;
                         }
                     }
                     else {
                         cout << "Not your piece! / Piece in the way!";
                         movesMade--;
-                        return;
                     }
                 }
 
                 break;
+            default: ;
         }
     }
 
